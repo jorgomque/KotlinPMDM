@@ -1,19 +1,13 @@
-import java.util.Locale
-import java.util.Locale.getDefault
+
 
 fun main() {
     println("Buenos dias ¿me podrias decir tu nombre?")
     val userName = readln()
     var menuOption : Int
 
-    var contacts: MutableMap<String, MutableList<String>> = mutableMapOf<String, MutableList<String>>()
-    var contacts2: MutableSet<Map<String, MutableList<String>>> = mutableSetOf()
+    val contacts: MutableSet<MutableMap<String, String>> = mutableSetOf()
     do {
         menuOption = menu(userName)
-        if (menuOption == 2) {
-
-        }
-
         when (menuOption) {
             0 -> println("Gracias por usar la agenda :)")
             1 -> {
@@ -41,15 +35,18 @@ fun main() {
             }
 
             4 ->  if (contacts.isEmpty()) println("La agenda esta vacia")
-                else {
-                    println("Introduce el nombre del contacto para borrar")
-                    val searchName = readln()
-                    deleteContact(contacts, searchName)
-                }
+            else {
+                println("Introduce el nombre del contacto para borrar")
+                val searchName = readln()
+                deleteContact(contacts, searchName)
+            }
 
             5 -> {
                 if (contacts.isEmpty()) println("La agenda esta vacia")
-                else contacts.clear()
+                else {
+                    contacts.clear()
+                    println("Se ha borrado la agenda")
+                }
             }
         }
     } while (menuOption != 0)
@@ -86,38 +83,61 @@ fun menu(userName: String): Int{
     }while (!numberIsValid)
     return userNumber
 }
-fun showContacts(contacts: MutableMap<String, MutableList<String>>){
+fun showContacts(contacts: MutableSet<MutableMap<String, String>>){
+    for (contact in contacts){
+        println("Nombre: ${contact["nombre"]}, Apellidos ${contact["apellidos"]}, Email ${contact["email"]}")
+    }
 
-    for ((key, value) in contacts){
-        println("Nombre:  $key Apellido: ${value[0]} Email: ${value[1]}")
+}
+
+fun addContact(contacts: MutableSet<MutableMap<String, String>>, name: String, surname: String, email: String){
+    val newContact = mutableMapOf(
+        "nombre" to name,
+        "apellidos" to surname,
+        "email" to email,
+    )
+    if(contacts.add(newContact)) println("añadido con exito")
+    else println("Ya existe un contacto identico, no se ha podido agregar")
+
+}
+
+fun searchContact(contacts: MutableSet<MutableMap<String, String>>, name: String){
+    val filteredContacts = contacts.filter {
+        it["nombre"].equals(name, ignoreCase = true)
+    }
+    if (filteredContacts.isEmpty()) {
+        println("No hay ningun contacto con ese nombre")
+        return
+    }
+    for (filteredContact in filteredContacts){
+        println("Nombre: ${filteredContact["nombre"]}, Apellidos ${filteredContact["apellidos"]}, Email ${filteredContact["email"]}")
     }
 }
-
-fun addContact(contacts: MutableMap<String, MutableList<String>>, name: String, surname: String, email: String){
-    contacts[name] = mutableListOf(surname, email)
-}
-fun searchContact(contacts: MutableMap<String, MutableList<String>>, name: String){
-    val filteredContacts = contacts.filter { it.key.contains(name, ignoreCase = true) }
-    for ((key, value) in filteredContacts){
-        println("Nombre:  $key Apellido: ${value[0]} Email: ${value[1]}")
+fun deleteContact(contacts: MutableSet<MutableMap<String, String>>, name: String){
+    val filteredContacts = contacts.filter {
+        it["nombre"].equals(name, ignoreCase = true)
     }
-}
-fun deleteContact(contacts: MutableMap<String, MutableList<String>>, name: String){
-    val filteredContacts = contacts.filter { it.key.contains(name, ignoreCase = true) }
+    if (filteredContacts.isEmpty()) {
+        println("No hay ningun contacto con ese nombre")
+        return
+    }
     if(filteredContacts.size == 1){
-        contacts.remove(name)
+        contacts.remove(filteredContacts[0])
+        println("Contacto eliminado")
     }
     else{
         println("Elige cual borrar (numero de la izquierda)")
-        for (i in filteredContacts){
-            println("$i. Contato: ${i.value[0]} Email: ${i.value[1]}")
+        for (i in filteredContacts.indices){
+            val filteredContact = filteredContacts[i]
+            println("$i: Nombre: ${filteredContact["nombre"]}, Apellidos ${filteredContact["apellidos"]}, Email ${filteredContact["email"]}")
         }
         val removeContactNumber = readInt()
         if (removeContactNumber >= filteredContacts.size || removeContactNumber < 0){
             println("Numero no valido")
         }
         else{
-            contacts.remove(name, value = filteredContacts.values.toList()[removeContactNumber])
+            contacts.remove(filteredContacts[removeContactNumber])
+            println("Contancto eliminado")
 
         }
     }
@@ -147,7 +167,7 @@ fun readEmail() : String{
         var emailIsValid = true
         try {
             userEmail = readln()
-            if (!userEmail.contains(checkEmail)) {
+            if (!userEmail.matches(checkEmail)) {
                 throw Exception("Email no valido")
             }
         }catch(e:Exception){
