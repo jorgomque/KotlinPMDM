@@ -3,7 +3,7 @@ import kotlin.math.sqrt
 /**
  *  Programa que pide al usuario un número, muestra si es primo o no
  *  hata que introduzca 0
- *  @author Jorge Gómez
+ *  @author Jorge Gómez Querol
  * @version 1.0
  *
  */
